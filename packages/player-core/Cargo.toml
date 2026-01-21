@@ -36,8 +36,8 @@ parking_lot = "0.12"
 
 [dependencies.ffmpeg-next]
 version = "8"
-# default-features = false
-# features = ["codec", "format", "software-resampling", "static"]
+default-features = false
+features = ["codec", "format", "software-resampling", "static"]
 
 [target.'cfg(target_os = "windows")'.dependencies]
 tempfile = "^3"

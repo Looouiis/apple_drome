@@ -52,7 +52,7 @@ bitflags = "2.10"
 
 [dependencies.ffmpeg-next]
 version = "8"
-# default-features = false
+default-features = false
 
 [patch.crates-io]
 ffmpeg-sys-next = { git = "https://github.com/apoint123/rust-ffmpeg-sys" }
