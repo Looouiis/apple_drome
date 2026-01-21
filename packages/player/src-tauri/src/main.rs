@@ -1,5 +1,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    amll_player_lib::run();
+    apple_drome_lib::run();
 }
