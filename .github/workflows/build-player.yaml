@@ -1,4 +1,4 @@
-name: 构建 AMLL Player Tauri 桌面版本
+name: 构建 Apple Drome Tauri 桌面版本
 on:
     push:
         branches:
@@ -213,13 +213,13 @@ jobs:
                   fi
                   node ./packages/player/scripts/gen-dev-version.mjs
 
-            - name: 构建 AMLL Player 程序并发布自动构建
+            - name: 构建 Apple Drome 程序并发布自动构建
               uses: tauri-apps/tauri-action@v0
               with:
                   projectPath: packages/player
                   tagName: ${{ github.ref_name }}-player-dev
                   includeUpdaterJson: true
-                  releaseName: AMLL Player ${{ github.ref_name }} branch development build
+                  releaseName: Apple Drome ${{ github.ref_name }} branch development build
                   releaseBody: |
                       Latest ${{ github.ref_name }} branch development build.
                       最新 ${{ github.ref_name }} 分支开发调试构建。
@@ -235,11 +235,11 @@ jobs:
             - name: 上传产物到 Action Artifact
               uses: actions/upload-artifact@v4
               with:
-                  name: AMLL Player ${{matrix.name}}-${{matrix.arch}}
+                  name: Apple Drome ${{matrix.name}}-${{matrix.arch}}
                   path: |
                       packages/player/src-tauri/target/**/release/bundle/**/*
-                      packages/player/src-tauri/target/**/release/amll-player.exe
-                      packages/player/src-tauri/target/**/release/amll-player
+                      packages/player/src-tauri/target/**/release/apple_drome.exe
+                      packages/player/src-tauri/target/**/release/apple_drome
 
     build-tauri-android:
         name: 构建 Tauri 安卓移动版本
@@ -333,7 +333,7 @@ jobs:
             - name: 构建 AMLL Full React 包
               run: |
                   pnpm i --frozen-lockfile --ignore-scripts
-                  pnpm nx build player
+                  pnpm nx build apple-drome
               env:
                   AMLL_GITHUB_IS_ACTION: true
 
@@ -341,7 +341,7 @@ jobs:
               run: |
                   node ./packages/player/scripts/gen-dev-version.mjs
 
-            - name: 构建 AMLL Player 安卓移动版程序
+            - name: 构建 Apple Drome 安卓移动版程序
               env:
                   CARGO_NDK_ANDROID_PLATFORM: 26
               run: |
@@ -354,7 +354,7 @@ jobs:
             - name: 上传产物到 Action Artifact
               uses: actions/upload-artifact@v4
               with:
-                  name: AMLL Player Android Universal
+                  name: Apple Drome Android Universal
                   path: |
                       packages/player/src-tauri/gen/android/app/build/outputs/**/*.apk
                       packages/player/src-tauri/gen/android/app/build/outputs/**/*.aab
