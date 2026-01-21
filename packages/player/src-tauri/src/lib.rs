@@ -299,20 +299,20 @@ pub fn run() {
 
     let builder = tauri::Builder::default().plugin(tauri_plugin_opener::init());
 
-    #[cfg(not(mobile))]
-    let pubkey = {
-        if let Some(Value::Object(updater_config)) = context.config().plugins.0.get("updater") {
-            if let Some(Value::String(pubkey)) = updater_config.get("pubkey") {
-                pubkey.clone()
-            } else {
-                "".into()
-            }
-        } else {
-            "".into()
-        }
-    };
-    #[cfg(not(mobile))]
-    let builder = builder.plugin(tauri_plugin_updater::Builder::new().pubkey(pubkey).build());
+    // #[cfg(not(mobile))]
+    // let pubkey = {
+    //     if let Some(Value::Object(updater_config)) = context.config().plugins.0.get("updater") {
+    //         if let Some(Value::String(pubkey)) = updater_config.get("pubkey") {
+    //             pubkey.clone()
+    //         } else {
+    //             "".into()
+    //         }
+    //     } else {
+    //         "".into()
+    //     }
+    // };
+    // #[cfg(not(mobile))]
+    // let builder = builder.plugin(tauri_plugin_updater::Builder::new().pubkey(pubkey).build());
 
     #[cfg(mobile)]
     {
