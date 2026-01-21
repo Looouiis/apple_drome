@@ -201,7 +201,7 @@ jobs:
             - name: 构建 AMLL Full React 包
               run: |
                   pnpm i --frozen-lockfile --ignore-scripts
-                  pnpm nx build player
+                  pnpm nx build apple-drome
               env:
                   AMLL_GITHUB_IS_ACTION: true
 
