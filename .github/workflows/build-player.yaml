@@ -35,13 +35,13 @@ jobs:
             fail-fast: false
             matrix:
                 include:
-                    - platform: ubuntu-latest
-                      args: ""
-                      name: linux
-                      arch: x86_64
-                      artifact_name_suffix: linux-x64
-                      package_extension: tar.gz
-                      os_runner: ubuntu-latest
+                    # - platform: ubuntu-latest
+                    #   args: ""
+                    #   name: linux
+                    #   arch: x86_64
+                    #   artifact_name_suffix: linux-x64
+                    #   package_extension: tar.gz
+                    #   os_runner: ubuntu-latest
                     - platform: windows-latest
                       args: ""
                       name: windows
@@ -49,27 +49,34 @@ jobs:
                       artifact_name_suffix: windows-x64
                       package_extension: zip
                       os_runner: windows-latest
-                    - platform: windows-latest
-                      args: "--target aarch64-pc-windows-msvc"
+                    - platform: windows-self
+                      args: ""
                       name: windows
-                      arch: aarch64
-                      artifact_name_suffix: windows-arm64
-                      package_extension: zip
-                      os_runner: windows-latest
-                    - platform: macos-latest # arm64 二进制包
-                      args: "--target aarch64-apple-darwin"
-                      name: macOS
-                      arch: aarch64
-                      artifact_name_suffix: macos-arm64
-                      package_extension: tar.gz
-                      os_runner: macos-14
-                    - platform: macos-latest # x86 二进制包
-                      args: "--target x86_64-apple-darwin"
-                      name: macOS
                       arch: x86_64
-                      artifact_name_suffix: macos-x64
-                      package_extension: tar.gz
-                      os_runner: macos-latest
+                      artifact_name_suffix: windows-x64
+                      package_extension: zip
+                      os_runner: self-hosted
+                    # - platform: windows-latest
+                    #   args: "--target aarch64-pc-windows-msvc"
+                    #   name: windows
+                    #   arch: aarch64
+                    #   artifact_name_suffix: windows-arm64
+                    #   package_extension: zip
+                    #   os_runner: windows-latest
+                    # - platform: macos-latest # arm64 二进制包
+                    #   args: "--target aarch64-apple-darwin"
+                    #   name: macOS
+                    #   arch: aarch64
+                    #   artifact_name_suffix: macos-arm64
+                    #   package_extension: tar.gz
+                    #   os_runner: macos-14
+                    # - platform: macos-latest # x86 二进制包
+                    #   args: "--target x86_64-apple-darwin"
+                    #   name: macOS
+                    #   arch: x86_64
+                    #   artifact_name_suffix: macos-x64
+                    #   package_extension: tar.gz
+                    #   os_runner: macos-latest
                     # - platform: macos-latest # 通用二进制包
                     #   args: "--target universal-apple-darwin"
                     #   name: macOS
