@@ -19,6 +19,7 @@ import { Link } from "react-router-dom";
 import { ExtensionInjectPoint } from "../../components/ExtensionInjectPoint/index.tsx";
 import { NewPlaylistButton } from "../../components/NewPlaylistButton/index.tsx";
 import { PageContainer } from "../../components/PageContainer/index.tsx";
+import { RemoteCard } from "../../components/RemoteCard/index.tsx";
 import { PlaylistCard } from "../../components/PlaylistCard/index.tsx";
 import { db } from "../../dexie.ts";
 import { router } from "../../router.tsx";
@@ -29,7 +30,9 @@ import {
 } from "../../states/appAtoms.ts";
 
 export const Component: FC = () => {
-	const playlists = useLiveQuery(() => db.playlists.toArray());
+    const remotes = useLiveQuery(() => db.remote.toArray());
+    // const remotes = undefined;
+    const playlists = useLiveQuery(() => db.playlists.toArray());
 	const updateInfo = useAtomValue(updateInfoAtom);
 	const parentRef = useRef<HTMLDivElement>(null);
 
@@ -156,6 +159,56 @@ export const Component: FC = () => {
 
 				<ExtensionInjectPoint injectPointName="page.main.top" />
 
+                {remotes !== undefined ? (remotes.length !== 0 && (
+                    <div
+						style={{
+							overflowY: "auto",
+							minHeight: "0",
+						}}
+						ref={parentRef}
+					>
+						<div
+							style={{
+								height: `${rowVirtualizer.getTotalSize()}px`,
+								width: "100%",
+								position: "relative",
+							}}
+						>
+							{rowVirtualizer.getVirtualItems().map((virtualItem) => {
+								const remote = remotes[virtualItem.index];
+								return (
+									<div
+										key={virtualItem.key}
+										style={{
+											position: "absolute",
+											top: 0,
+											left: 0,
+											width: "100%",
+											padding: "4px 8px",
+											height: `${virtualItem.size}px`,
+											transform: `translateY(${virtualItem.start}px)`,
+											boxSizing: "border-box",
+										}}
+									>
+										<RemoteCard remote={remote} />
+									</div>
+								);
+							})}
+						</div>
+					</div>
+                )) : (
+                    <Flex
+						direction="column"
+						gap="2"
+						justify="center"
+						align="center"
+						height="70vh"
+					>
+						<Spinner size="3" />
+						<Trans i18nKey="page.main.loadingPlaylist">加载远程源中</Trans>
+					</Flex>
+				)}
+
 				{playlists !== undefined ? (
 					playlists.length === 0 ? (
 						<Text mt="9" as="div" align="center">
@@ -202,7 +255,8 @@ export const Component: FC = () => {
 						</div>
 					)
 				) : (
-					<Flex
+
+				<Flex
 						direction="column"
 						gap="2"
 						justify="center"

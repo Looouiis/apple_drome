@@ -1,60 +1,66 @@
-use crate::server::AMLLWebSocketServer;
+// use crate::server::AMLLWebSocketServer;
 use amll_player_core::AudioInfo;
 use anyhow::Context;
 use ffmpeg_next as ffmpeg;
+use futures::lock::Mutex;
 use serde::*;
-use serde_json::Value;
 use std::net::SocketAddr;
+#[cfg(debug_assertions)]
+use std::time::Duration;
 use tauri::ipc::Channel;
 use tauri::{
     AppHandle, Manager, PhysicalSize, Runtime, Size, State, WebviewWindowBuilder,
     utils::config::WindowEffectsConfig, window::Effect,
 };
 use tokio::sync::RwLock;
+use tokio::time::sleep;
 use tracing::*;
 
+use crate::client::NavidromeClient;
+
+mod client;
 mod player;
 mod screen_capture;
-mod server;
 
 #[cfg(target_os = "windows")]
 mod external_media_controller;
 
-pub type AMLLWebSocketServerWrapper = RwLock<AMLLWebSocketServer>;
-pub type AMLLWebSocketServerState<'r> = State<'r, AMLLWebSocketServerWrapper>;
+pub type SubSonicClientWrapper = Mutex<NavidromeClient>;
+// pub type AMLLWebSocketServerWrapper = RwLock<AMLLWebSocketServer>;
+// pub type AMLLWebSocketServerState<'r> = State<'r, AMLLWebSocketServerWrapper>;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-#[tauri::command]
-async fn ws_reopen_connection(
-    addr: &str,
-    ws: AMLLWebSocketServerState<'_>,
-    channel: Channel<ws_protocol::v2::Payload>,
-) -> Result<(), String> {
-    ws.write().await.reopen(addr.to_string(), channel);
-    Ok(())
-}
+// #[tauri::command]
+// async fn ws_reopen_connection(
+//     addr: &str,
+//     ws: AMLLWebSocketServerState<'_>,
+//     channel: Channel<ws_protocol::v2::Payload>,
+// ) -> Result<(), String> {
+//     ws.write().await.reopen(addr.to_string(), channel);
+//     Ok(())
+// }
 
-#[tauri::command]
-async fn ws_close_connection(ws: AMLLWebSocketServerState<'_>) -> Result<(), String> {
-    ws.write().await.close().await;
-    Ok(())
-}
+// #[tauri::command]
+// async fn ws_close_connection(ws: AMLLWebSocketServerState<'_>) -> Result<(), String> {
+//     ws.write().await.close().await;
+//     Ok(())
+// }
 
-#[tauri::command]
-async fn ws_get_connections(ws: AMLLWebSocketServerState<'_>) -> Result<Vec<SocketAddr>, String> {
-    let server_guard = ws.read().await;
-    let connections = server_guard.get_connections().await;
-    Ok(connections)
-}
+// #[tauri::command]
+// async fn ws_get_connections(ws: AMLLWebSocketServerState<'_>) -> Result<Vec<SocketAddr>, String> {
+//     let server_guard = ws.read().await;
+//     let connections = server_guard.get_connections().await;
+//     Ok(connections)
+// }
 
-#[tauri::command]
-async fn ws_broadcast_payload(
-    ws: AMLLWebSocketServerState<'_>,
-    payload: ws_protocol::v2::Payload,
-) -> Result<(), String> {
-    ws.write().await.broadcast_payload(payload).await;
-    Ok(())
-}
+// #[tauri::command]
+// async fn ws_broadcast_payload(
+//     ws: AMLLWebSocketServerState<'_>,
+//     payload: ws_protocol::v2::Payload,
+// ) -> Result<(), String> {
+//     ws.write().await.broadcast_payload(payload).await;
+//     Ok(())
+// }
 
 #[tauri::command]
 fn restart_app<R: Runtime>(app: AppHandle<R>) {
@@ -278,7 +284,7 @@ fn init_logging() {
     #[cfg(debug_assertions)]
     {
         tracing_subscriber::fmt()
-            .with_env_filter("amll_player=trace,smtc_suite=debug,wry=info")
+            .with_env_filter("apple_drome=trace,amll_player_core=trace,smtc_suite=debug,wry=info")
             .with_thread_names(true)
             .with_timer(tracing_subscriber::fmt::time::uptime())
             .init();
@@ -292,12 +298,12 @@ fn init_logging() {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    #[cfg(not(debug_assertions))]
     init_logging();
-    info!("AMLL Player is starting!");
     #[allow(unused_mut)]
     let mut context = tauri::generate_context!();
 
-    let builder = tauri::Builder::default().plugin(tauri_plugin_opener::init());
+    let mut builder = tauri::Builder::default().plugin(tauri_plugin_opener::init());
 
     // #[cfg(not(mobile))]
     // let pubkey = {
@@ -327,6 +333,13 @@ pub fn run() {
 
     ffmpeg::init().expect("初始化 ffmpeg 失败");
 
+    #[cfg(debug_assertions)] // only enable instrumentation in development builds
+    let devtools = tauri_plugin_devtools::init();
+    #[cfg(debug_assertions)]
+    {
+        builder = builder.plugin(devtools);
+    }
+
     builder
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_os::init())
@@ -334,10 +347,10 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_http::init())
         .invoke_handler(tauri::generate_handler![
-            ws_reopen_connection,
-            ws_get_connections,
-            ws_broadcast_payload,
-            ws_close_connection,
+            // ws_reopen_connection,
+            // ws_get_connections,
+            // ws_broadcast_payload,
+            // ws_close_connection,
             open_screenshot_window,
             screen_capture::take_screenshot,
             player::local_player_send_msg,
@@ -361,17 +374,37 @@ pub fn run() {
                 app.manage(controller_state);
             }
 
-            #[cfg(desktop)]
-            let _ = app
-                .handle()
-                .plugin(tauri_plugin_global_shortcut::Builder::new().build());
-            app.manage::<AMLLWebSocketServerWrapper>(RwLock::new(AMLLWebSocketServer::new(
-                app.handle().clone(),
-            )));
+            // #[cfg(desktop)]
+            // let _ = app
+            //     .handle()
+            //     .plugin(tauri_plugin_global_shortcut::Builder::new().build());
+            // app.manage::<AMLLWebSocketServerWrapper>(RwLock::new(AMLLWebSocketServer::new(
+            //     app.handle().clone(),
+            // )));
             #[cfg(not(mobile))]
             {
                 tauri::async_runtime::block_on(recreate_window(app.handle(), "main", None));
             }
+
+            #[cfg(debug_assertions)]
+            {
+                let window = app.get_webview_window("main").unwrap();
+                window.open_devtools();
+                window.close_devtools();
+            }
+
+            let client = NavidromeClient::new().unwrap();
+            app.manage(Mutex::new(client));
+            let app_handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                #[cfg(debug_assertions)]
+                sleep(Duration::from_secs(3)).await;
+                let client = app_handle.state::<SubSonicClientWrapper>();
+                let mut guard = client.lock().await;
+                let _ = guard.auth().await;
+                let _ = guard.get_songs().await;
+            });
+
             Ok(())
         })
         .run(context)

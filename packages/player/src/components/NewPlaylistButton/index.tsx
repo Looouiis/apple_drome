@@ -10,22 +10,38 @@ import {
 import { type FC, useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { db } from "../../dexie.ts";
+import { toast } from "react-toastify";
 
 export const NewPlaylistButton: FC = () => {
 	const [name, setName] = useState("");
-	const { t } = useTranslation();
+    const [link, setLink] = useState("");
+    const [usr, setUsr] = useState("");
+    const [pwd, setPwd] = useState("");
+    const [select_source, setSelect] = useState("");
+    const { t } = useTranslation();
 
 	const cannotCreate = useMemo(() => name.trim().length === 0, [name]);
 
 	const onAddPlaylist = () => {
 		if (cannotCreate) return;
-		db.playlists.add({
-			name,
-			createTime: Date.now(),
-			updateTime: Date.now(),
-			playTime: 0,
-			songIds: [],
-		});
+        if (select_source === "apple-drome:Navidrome") {
+            toast.success("已添加Navidrome")
+            db.remote.add({
+                name,
+                link,
+                username: usr,
+                password: pwd,
+            });
+		}
+        else {
+            db.playlists.add({
+                name,
+                createTime: Date.now(),
+                updateTime: Date.now(),
+                playTime: 0,
+                songIds: [],
+            });
+        }
 	};
 
 	return (
@@ -50,15 +66,40 @@ export const NewPlaylistButton: FC = () => {
 						onChange={(e) => setName(e.currentTarget.value)}
 						autoFocus
 					/>
-					<Select.Root>
+                    <Select.Root
+                        value={select_source}
+                        onValueChange={(e) => setSelect(e)}
+                    >
 						<Select.Trigger placeholder="歌单管理源" />
 						<Select.Content>
 							<Select.Item value="amll-player:local">本地歌曲源</Select.Item>
 							<Select.Item value="amll-player:android-music">
 								安卓内容提供者 - 音频媒体源
 							</Select.Item>
+							<Select.Item value="apple-drome:Navidrome">Navidrome</Select.Item>
 						</Select.Content>
 					</Select.Root>
+                    {select_source === "apple-drome:Navidrome" && (
+                        <TextField.Root
+                            placeholder="链接"
+                            value={link}
+                            onChange={(e) => setLink(e.currentTarget.value)}
+                        />
+                    )}
+                    {select_source === "apple-drome:Navidrome" && (
+                        <TextField.Root
+                            placeholder="用户名"
+                            value={usr}
+                            onChange={(e) => setUsr(e.currentTarget.value)}
+                        />
+                    )}
+                    {select_source === "apple-drome:Navidrome" && (
+                        <TextField.Root
+                            placeholder="密码"
+                            value={pwd}
+                            onChange={(e) => setPwd(e.currentTarget.value)}
+                        />
+                    )}
 				</Flex>
 				<Flex gap="3" mt="4" justify="end">
 					<Dialog.Close>

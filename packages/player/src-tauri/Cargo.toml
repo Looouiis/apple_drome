@@ -49,13 +49,15 @@ ws-protocol = { path = "../../ws-protocol", features = ["tracing"] }
 tauri-plugin-http = "2"
 rodio = "0.21"
 bitflags = "2.10"
+tauri-plugin-devtools = "2.0.0"
 
 [dependencies.ffmpeg-next]
-version = "8"
+version = "8.0.0"
 default-features = false
+path = "../../rust-ffmpeg"
 
 [patch.crates-io]
-ffmpeg-sys-next = { git = "https://github.com/apoint123/rust-ffmpeg-sys" }
+ffmpeg-sys-next = { path = "../../rust-ffmpeg-sys" }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2 = "^0.6"

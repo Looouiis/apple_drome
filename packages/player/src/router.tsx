@@ -28,6 +28,11 @@ export const router = createBrowserRouter(
 				lazy={() => import("./pages/playlist")}
 				errorElement={<ErrorPage />}
 			/>
+            <Route
+                path="/remote/:id"
+                lazy={() => import("./pages/remote")}
+                errorElement={<ErrorPage />}
+            />
 			<Route
 				path="/song/:id"
 				lazy={() => import("./pages/song/index.tsx")}
